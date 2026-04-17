@@ -30,8 +30,10 @@ let topics = [];
 
 // --- Element Selections ---
 // TODO: Select the new-topic form by id 'new-topic-form'.
+const newTopicForm = document.getElementById('new-topic-form');
 
 // TODO: Select the topic list container by id 'topic-list-container'.
+const topicListContainer = document.getElementById('topic-list-container');
 
 // --- Functions ---
 
@@ -62,6 +64,37 @@ let topics = [];
  */
 function createTopicArticle(topic) {
   // ... your implementation here ...
+    const article = document.createElement('article');
+ 
+  const h3 = document.createElement('h3');
+  const a = document.createElement('a');
+  a.href = 'topic.html?id=' + topic.id;
+  a.textContent = topic.subject;
+  h3.appendChild(a);
+ 
+  const footer = document.createElement('footer');
+  footer.textContent = 'Posted by: ' + topic.author + ' on ' + topic.created_at;
+ 
+  const div = document.createElement('div');
+ 
+  const editBtn = document.createElement('button');
+  editBtn.className = 'edit-btn';
+  editBtn.dataset.id = topic.id;
+  editBtn.textContent = 'Edit';
+ 
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'delete-btn';
+  deleteBtn.dataset.id = topic.id;
+  deleteBtn.textContent = 'Delete';
+ 
+  div.appendChild(editBtn);
+  div.appendChild(deleteBtn);
+ 
+  article.appendChild(h3);
+  article.appendChild(footer);
+  article.appendChild(div);
+ 
+  return article;
 }
 
 /**
@@ -75,6 +108,10 @@ function createTopicArticle(topic) {
  */
 function renderTopics() {
   // ... your implementation here ...
+  topicListContainer.innerHTML = '';
+  topics.forEach(function(topic) {
+    topicListContainer.appendChild(createTopicArticle(topic));
+  });
 }
 
 /**
@@ -98,6 +135,37 @@ function renderTopics() {
  */
 async function handleCreateTopic(event) {
   // ... your implementation here ...
+    event.preventDefault();
+ 
+  const subject = document.getElementById('topic-subject').value;
+  const message = document.getElementById('topic-message').value;
+  const createBtn = document.getElementById('create-topic');
+  const editId = createBtn.dataset.editId;
+ 
+  if (editId) {
+    await handleUpdateTopic(editId, { subject, message });
+    return;
+  }
+ 
+  const response = await fetch('./api/index.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subject, message, author: 'Student' })
+  });
+ 
+  const result = await response.json();
+ 
+  if (result.success === true) {
+    topics.push({
+      id: result.id,
+      subject: subject,
+      message: message,
+      author: 'Student',
+      created_at: new Date().toISOString().replace('T', ' ').substring(0, 19)
+    });
+    renderTopics();
+    newTopicForm.reset();
+  }
 }
 
 /**
@@ -116,6 +184,26 @@ async function handleCreateTopic(event) {
  */
 async function handleUpdateTopic(id, fields) {
   // ... your implementation here ...
+    const response = await fetch('./api/index.php', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: Number(id), ...fields })
+  });
+ 
+  const result = await response.json();
+ 
+  if (result.success === true) {
+    topics = topics.map(function(t) {
+      return t.id === Number(id) ? { ...t, ...fields } : t;
+    });
+    renderTopics();
+    newTopicForm.reset();
+ 
+    const createBtn = document.getElementById('create-topic');
+    createBtn.textContent = 'Create Topic';
+    delete createBtn.dataset.editId;
+  }
+  
 }
 
 /**
@@ -138,6 +226,28 @@ async function handleUpdateTopic(id, fields) {
  */
 async function handleTopicListClick(event) {
   // ... your implementation here ...
+     if (event.target.classList.contains('delete-btn')) {
+    const id = event.target.dataset.id;
+    const response = await fetch('./api/index.php?id=' + id, { method: 'DELETE' });
+    const result = await response.json();
+    if (result.success === true) {
+      topics = topics.filter(function(t) { return t.id !== Number(id); });
+      renderTopics();
+    }
+  }
+ 
+  if (event.target.classList.contains('edit-btn')) {
+    const id = event.target.dataset.id;
+    const topic = topics.find(function(t) { return t.id === Number(id); });
+    if (!topic) return;
+ 
+    document.getElementById('topic-subject').value = topic.subject;
+    document.getElementById('topic-message').value = topic.message;
+ 
+    const createBtn = document.getElementById('create-topic');
+    createBtn.textContent = 'Update Topic';
+    createBtn.dataset.editId = topic.id;
+  }
 }
 
 /**
@@ -155,6 +265,16 @@ async function handleTopicListClick(event) {
  */
 async function loadAndInitialize() {
   // ... your implementation here ...
+  const response = await fetch('./api/index.php');
+  const result = await response.json();
+ 
+  if (result.success && Array.isArray(result.data)) {
+    topics = result.data;
+  }
+ 
+  renderTopics();
+  newTopicForm.addEventListener('submit', handleCreateTopic);
+  topicListContainer.addEventListener('click', handleTopicListClick);
 }
 
 // --- Initial Page Load ---
