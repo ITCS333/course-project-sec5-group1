@@ -56,7 +56,7 @@ let section = document.getElementById('assignment-list-section');
 function createAssignmentArticle(assignment) {
   // ... your implementation here ...
 
-  let article = document.createElement('articl'); 
+  let article = document.createElement('article'); 
   let title = document.createElement('h1'); 
  
   title.tectContent = assignment.title; 
