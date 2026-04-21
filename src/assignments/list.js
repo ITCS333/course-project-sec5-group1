@@ -57,7 +57,7 @@ function createAssignmentArticle(assignment) {
   // ... your implementation here ...
 
   let article = document.createElement('article'); 
-  let title = document.createElement('h1'); 
+  let title = document.createElement('h2'); 
  
   title.tectContent = assignment.title; 
 
