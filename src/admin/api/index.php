@@ -69,54 +69,31 @@ function sendResponse($data, $statusCode = 200) {
 try {
 
     if ($method === 'GET') {
-
-        if (!empty($id)) {
-
-            $stmt = $db->prepare("SELECT id, name, email, is_admin, created_at FROM users WHERE id = ?");
-
-            $stmt->execute([$id]);
-
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$user) sendResponse("User not found", 404);
-
-            sendResponse($user, 200);
-
-        } else {
-
-            $sql = "SELECT id, name, email, is_admin, created_at FROM users WHERE 1=1";
-
-            $params = [];
-
-            if (!empty($search)) {
-
-                $sql .= " AND (name LIKE CONCAT('%', ?, '%') OR email LIKE CONCAT('%', ?, '%'))";
-
-                $params[] = $search;
-
-                $params[] = $search;
-
-            }
-
-            $allowedSort = ['name', 'email', 'is_admin'];
-
-            if (in_array($sort, $allowedSort)) {
-
-                $sql .= " ORDER BY $sort " . ($order === 'desc' ? 'DESC' : 'ASC');
-
-            }
-
-            $stmt = $db->prepare($sql);
-
-            $stmt->execute($params);
-
-            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            sendResponse($users, 200);
-
-        }
-
-    }
+   if (!empty($id)) {
+       $stmt = $db->prepare("SELECT id, name, email, is_admin, created_at FROM users WHERE id = ?");
+       $stmt->execute([$id]);
+       $user = $stmt->fetch(PDO::FETCH_ASSOC);
+       if (!$user) sendResponse("User not found", 404);
+       sendResponse($user, 200);
+   } else {
+       $sql = "SELECT id, name, email, is_admin, created_at FROM users WHERE 1=1";
+       $params = [];
+       if (!empty($search)) {
+           $sql .= " AND (LOWER(name) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?))";
+           $like = '%' . $search . '%';
+           $params[] = $like;
+           $params[] = $like;
+       }
+       $allowedSort = ['name', 'email', 'is_admin'];
+       if (in_array($sort, $allowedSort)) {
+           $sql .= " ORDER BY $sort " . ($order === 'desc' ? 'DESC' : 'ASC');
+       }
+       $stmt = $db->prepare($sql);
+       $stmt->execute($params);
+       $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+       sendResponse($users, 200);
+   }
+}
 
     elseif ($method === 'POST') {
 
