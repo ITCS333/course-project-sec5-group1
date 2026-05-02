@@ -199,7 +199,7 @@ function handleSort(event) {
    const propertyMap = { 0: "name", 1: "email", 2: "is_admin" };
    const property = propertyMap[columnIndex];
    if (!property) return;
-   let currentDir = th.dataset.sortDir || "asc";
+   let currentDir = th.dataset.sortDir || "desc";
    let newDir = currentDir === "asc" ? "desc" : "asc";
    th.dataset.sortDir = newDir;
    const sorted = [...users];
