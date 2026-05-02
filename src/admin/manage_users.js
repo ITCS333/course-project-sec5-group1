@@ -52,7 +52,7 @@ async function handleChangePassword(event) {
        return;
    }
    try {
-       const response = await fetch("../api/index.php?action=change_password", {
+       const response = await fetch("api/index.php?action=change_password", {
            method: "POST",
            headers: {
                "Content-Type": "application/json"
@@ -92,7 +92,7 @@ async function handleAddUser(event) {
        return;
    }
    try {
-       const response = await fetch("../api/index.php", {
+       const response = await fetch("api/index.php", {
            method: "POST",
            headers: {
                "Content-Type": "application/json"
@@ -121,7 +121,7 @@ async function handleTableClick(event) {
    if (target.classList.contains("delete-btn")) {
        const id = target.dataset.id;
        try {
-           const response = await fetch("../api/index.php?id=" + id, {
+           const response = await fetch("api/index.php?id=" + id, {
                method: "DELETE"
            });
            const result = await response.json();
@@ -155,7 +155,7 @@ async function handleTableClick(event) {
            return;
        }
        try {
-           const response = await fetch("../api/index.php", {
+           const response = await fetch("api/index.php", {
                method: "PUT",
                headers: {
                    "Content-Type": "application/json"
@@ -221,7 +221,7 @@ function handleSort(event) {
 let listenersAttached = false;
 async function loadUsersAndInitialize() {
    try {
-       const response = await fetch("../api/index.php");
+       const response = await fetch("api/index.php");
        if (!response.ok) {
            console.error("Failed to fetch users.");
            alert("Failed to load users.");
