@@ -26,7 +26,7 @@ try {
 
     http_response_code(500);
 
-    echo json_encode(['success' => false, 'message' => 'Database connection failed: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
 
     exit;
 
@@ -90,11 +90,11 @@ try {
 
             if (!empty($search)) {
 
-                $sql .= " AND (name LIKE ? OR email LIKE ?)";
+                $sql .= " AND (name LIKE CONCAT('%', ?, '%') OR email LIKE CONCAT('%', ?, '%'))";
 
-                $params[] = "%$search%";
+                $params[] = $search;
 
-                $params[] = "%$search%";
+                $params[] = $search;
 
             }
 
@@ -116,7 +116,7 @@ try {
 
         }
 
-    } 
+    }
 
     elseif ($method === 'POST') {
 
