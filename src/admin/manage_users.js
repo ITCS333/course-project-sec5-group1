@@ -51,12 +51,13 @@ async function handleChangePassword(event) {
        alert("Password must be at least 8 characters.");
        return;
    }
+   document.getElementById("current-password").value = "";
+   document.getElementById("new-password").value = "";
+   document.getElementById("confirm-password").value = "";
    try {
        const response = await fetch("api/index.php?action=change_password", {
            method: "POST",
-           headers: {
-               "Content-Type": "application/json"
-           },
+           headers: { "Content-Type": "application/json" },
            body: JSON.stringify({
                id: 1,
                current_password: currentPassword,
@@ -66,9 +67,6 @@ async function handleChangePassword(event) {
        const result = await response.json();
        if (response.ok && result.success) {
            alert("Password updated successfully!");
-           document.getElementById("current-password").value = "";
-           document.getElementById("new-password").value = "";
-           document.getElementById("confirm-password").value = "";
        } else {
            alert(result.message);
        }
@@ -77,6 +75,7 @@ async function handleChangePassword(event) {
        alert("An error occurred while updating the password.");
    }
 }
+
 async function handleAddUser(event) {
    event.preventDefault();
    const name = document.getElementById("user-name").value.trim();
@@ -193,31 +192,30 @@ function handleSearch(event) {
    });
    renderTable(filteredUsers);
 }
+
 function handleSort(event) {
-   const columnIndex = event.currentTarget.cellIndex;
-   const propertyMap = {
-       0: "name",
-       1: "email",
-       2: "is_admin"
-   };
+   const th = event.currentTarget;
+   const columnIndex = th.cellIndex;
+   const propertyMap = { 0: "name", 1: "email", 2: "is_admin" };
    const property = propertyMap[columnIndex];
-   if (!property) {
-       return;
-   }
-   const currentSortDir = event.currentTarget.dataset.sortDir || "asc";
-   const newSortDir = currentSortDir === "asc" ? "desc" : "asc";
-   event.currentTarget.dataset.sortDir = newSortDir;
-   users.sort((a, b) => {
-       let comparison;
+   if (!property) return;
+   let currentDir = th.dataset.sortDir || "asc";
+   let newDir = currentDir === "asc" ? "desc" : "asc";
+   th.dataset.sortDir = newDir;
+   const sorted = [...users];
+   sorted.sort((a, b) => {
+       let aVal = a[property];
+       let bVal = b[property];
        if (property === "name" || property === "email") {
-           comparison = a[property].localeCompare(b[property]);
+           return newDir === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
        } else {
-           comparison = Number(a[property]) - Number(b[property]);
+           return newDir === "asc" ? aVal - bVal : bVal - aVal;
        }
-       return newSortDir === "asc" ? comparison : -comparison;
    });
+   users = sorted;
    renderTable(users);
 }
+
 let listenersAttached = false;
 async function loadUsersAndInitialize() {
    try {
