@@ -1,168 +1,187 @@
 /*
-  Requirement: Populate the weekly detail page and handle the discussion forum.
+  details.js — populates the weekly detail page and handles the discussion forum.
 
-  Instructions:
-  1. This file is already linked to `details.html` via:
-         <script src="details.js" defer></script>
+  HTML entry point: src/weekly/details.html
+    <script src="details.js" defer></script>
 
-  2. The following ids must exist in details.html (already listed in the
-     HTML comments):
-       #week-title          — <h1>
-       #week-start-date     — <p>
-       #week-description    — <p>
-       #week-links-list     — <ul>
-       #comment-list        — <div>
-       #comment-form        — <form>
-       #new-comment         — <textarea>
-
-  3. Implement the TODOs below.
+  Required element ids:
+    #week-title          — <h1>
+    #week-start-date     — <p>
+    #week-description    — <p>
+    #week-links-list     — <ul>
+    #comment-list        — <div>
+    #comment-form        — <form>
+    #new-comment         — <textarea>
 
   API base URL: ./api/index.php
-  Week object shape returned by the API:
-    {
-      id:          number,   // integer primary key from the weeks table
-      title:       string,
-      start_date:  string,   // "YYYY-MM-DD"
-      description: string,
-      links:       string[]  // decoded array of URL strings
-    }
 
-  Comment object shape returned by the API
-  (from the comments_week table):
-    {
-      id:          number,
-      week_id:     number,
-      author:      string,
-      text:        string,
-      created_at:  string
-    }
+  Week object shape:
+    { id, title, start_date, description, links: string[] }
+
+  Comment object shape (from comments_week):
+    { id, week_id, author, text, created_at }
 */
 
 // --- Global Data Store ---
-let currentWeekId  = null;  // integer id from the weeks table
+let currentWeekId   = null;
 let currentComments = [];
 
 // --- Element Selections ---
-// TODO: Select each element by its id:
-//   weekTitle, weekStartDate, weekDescription,
-//   weekLinksList, commentList, commentForm, newCommentInput.
+const weekTitle       = document.getElementById("week-title");
+const weekStartDate   = document.getElementById("week-start-date");
+const weekDescription = document.getElementById("week-description");
+const weekLinksList   = document.getElementById("week-links-list");
+const commentList     = document.getElementById("comment-list");
+const commentForm     = document.getElementById("comment-form");
+const newCommentInput = document.getElementById("new-comment");
 
 // --- Functions ---
 
 /**
- * TODO: Implement getWeekIdFromURL.
- *
- * It should:
- * 1. Read window.location.search.
- * 2. Construct a URLSearchParams object from it.
- * 3. Return the value of the 'id' parameter (a string that represents
- *    the integer primary key of the week).
+ * Read ?id=<value> from the URL query string.
+ * Returns the string id (e.g. "5") or null if not present.
  */
 function getWeekIdFromURL() {
-  // ... your implementation here ...
+  const params = new URLSearchParams(window.location.search);
+  return params.get("id");
 }
 
 /**
- * TODO: Implement renderWeekDetails.
- *
- * Parameters:
- *   week — the week object returned by the API (see shape above).
- *
- * It should:
- * 1. Set weekTitle.textContent    = week.title.
- * 2. Set weekStartDate.textContent = "Starts on: " + week.start_date.
- *    (Note: use week.start_date, which matches the SQL column name.)
- * 3. Set weekDescription.textContent = week.description.
- * 4. Clear weekLinksList, then for each URL in week.links:
- *    - Create a <li> containing an <a href="{url}">{url}</a>.
- *    - Append the <li> to weekLinksList.
- *    (week.links is already a decoded string array from the API.)
+ * Populate the week information section from a week object.
  */
 function renderWeekDetails(week) {
-  // ... your implementation here ...
+  weekTitle.textContent       = week.title;
+  weekStartDate.textContent   = "Starts on: " + week.start_date;
+  weekDescription.textContent = week.description;
+
+  // Clear and rebuild the links list.
+  weekLinksList.innerHTML = "";
+
+  const links = Array.isArray(week.links) ? week.links : [];
+  links.forEach(url => {
+    const li = document.createElement("li");
+    const a  = document.createElement("a");
+    a.href        = url;
+    a.textContent = url;
+    a.target      = "_blank";
+    li.appendChild(a);
+    weekLinksList.appendChild(li);
+  });
 }
 
 /**
- * TODO: Implement createCommentArticle.
- *
- * Parameters:
- *   comment — one comment object from the API:
- *     { id, week_id, author, text, created_at }
- *
- * Returns an <article> element:
+ * Build one <article> element for a single comment.
  *   <article>
- *     <p>{comment.text}</p>
- *     <footer>Posted by: {comment.author}</footer>
+ *     <p>{text}</p>
+ *     <footer>Posted by: {author}</footer>
  *   </article>
  */
 function createCommentArticle(comment) {
-  // ... your implementation here ...
+  const article = document.createElement("article");
+
+  const p = document.createElement("p");
+  p.textContent = comment.text;
+
+  const footer = document.createElement("footer");
+  footer.textContent = "Posted by: " + comment.author;
+
+  article.appendChild(p);
+  article.appendChild(footer);
+
+  return article;
 }
 
 /**
- * TODO: Implement renderComments.
- *
- * It should:
- * 1. Clear commentList (set innerHTML to "").
- * 2. Loop through currentComments.
- * 3. For each comment, call createCommentArticle(comment) and
- *    append the result to commentList.
+ * Render every comment in currentComments into #comment-list.
  */
 function renderComments() {
-  // ... your implementation here ...
+  commentList.innerHTML = "";
+  currentComments.forEach(comment => {
+    commentList.appendChild(createCommentArticle(comment));
+  });
 }
 
 /**
- * TODO: Implement handleAddComment (async).
- *
- * This is the event handler for commentForm's 'submit' event.
- * It should:
- * 1. Call event.preventDefault().
- * 2. Read and trim the value from newCommentInput (#new-comment).
- * 3. If the value is empty, return early (do nothing).
- * 4. Send a POST to './api/index.php?action=comment' with the body:
- *      {
- *        week_id: currentWeekId,   // integer
- *        author:  "Student",       // hardcoded for this exercise
- *        text:    commentText
- *      }
- *    The API inserts a row into the comments_week table.
- * 5. On success (result.success === true):
- *    - Push the new comment object (from result.data) onto
- *      currentComments.
- *    - Call renderComments() to refresh the list.
- *    - Clear newCommentInput.
+ * Handle the comment form submission.
+ * Sends POST ./api/index.php?action=comment with {week_id, author, text}.
  */
 async function handleAddComment(event) {
-  // ... your implementation here ...
+  event.preventDefault();
+
+  const commentText = newCommentInput.value.trim();
+  if (commentText === "") {
+    return;
+  }
+
+  try {
+    const response = await fetch("./api/index.php?action=comment", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({
+        week_id: currentWeekId,
+        author:  "Student",
+        text:    commentText,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result && result.success) {
+      // Add the new comment to the local cache and re-render.
+      if (result.data) {
+        currentComments.push(result.data);
+      } else {
+        currentComments.push({
+          id:         result.id,
+          week_id:    currentWeekId,
+          author:     "Student",
+          text:       commentText,
+          created_at: "",
+        });
+      }
+      renderComments();
+      newCommentInput.value = "";
+    }
+  } catch (err) {
+    console.error("Failed to post comment:", err);
+  }
 }
 
 /**
- * TODO: Implement initializePage (async).
- *
- * It should:
- * 1. Call getWeekIdFromURL() and store the result in currentWeekId.
- * 2. If currentWeekId is null or empty, set
- *    weekTitle.textContent = "Week not found." and return.
- * 3. Fetch both the week details and its comments in parallel using
- *    Promise.all:
- *      - Week:     GET ./api/index.php?id={currentWeekId}
- *                  Response: { success: true, data: { ...week object } }
- *      - Comments: GET ./api/index.php?action=comments&week_id={currentWeekId}
- *                  Response: { success: true, data: [ ...comment objects ] }
- *    Comments are stored in the comments_week table
- *    (columns: id, week_id, author, text, created_at).
- * 4. Store the comments array in currentComments
- *    (use an empty array if none exist).
- * 5. If the week was found:
- *    - Call renderWeekDetails(week).
- *    - Call renderComments().
- *    - Attach the 'submit' listener to commentForm (calls handleAddComment).
- * 6. If the week was not found:
- *    - Set weekTitle.textContent = "Week not found."
+ * Load the week and its comments in parallel, then wire up the form.
  */
 async function initializePage() {
-  // ... your implementation here ...
+  currentWeekId = getWeekIdFromURL();
+
+  if (!currentWeekId) {
+    weekTitle.textContent = "Week not found.";
+    return;
+  }
+
+  try {
+    const [weekRes, commentsRes] = await Promise.all([
+      fetch("./api/index.php?id=" + encodeURIComponent(currentWeekId)),
+      fetch("./api/index.php?action=comments&week_id=" + encodeURIComponent(currentWeekId)),
+    ]);
+
+    const weekJson     = await weekRes.json();
+    const commentsJson = await commentsRes.json();
+
+    currentComments = (commentsJson && Array.isArray(commentsJson.data))
+      ? commentsJson.data
+      : [];
+
+    if (weekJson && weekJson.success && weekJson.data) {
+      renderWeekDetails(weekJson.data);
+      renderComments();
+      commentForm.addEventListener("submit", handleAddComment);
+    } else {
+      weekTitle.textContent = "Week not found.";
+    }
+  } catch (err) {
+    console.error("Failed to initialize page:", err);
+    weekTitle.textContent = "Week not found.";
+  }
 }
 
 // --- Initial Page Load ---
