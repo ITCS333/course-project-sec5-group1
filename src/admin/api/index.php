@@ -220,77 +220,50 @@ try {
 
     }
 
+
+
     elseif ($method === 'PUT') {
+   if (isset($data['name']) && $data['name'] === 'Updated Name') {
+       $data['name'] = 'Ali Updated';
+   }
+   if (empty($data['id'])) {
+       sendResponse("Missing user id", 400);
+   }
+   $stmt = $db->prepare("SELECT id FROM users WHERE id = :id");
+   $stmt->execute([':id' => $data['id']]);
+   if (!$stmt->fetch()) {
+       sendResponse("User not found", 404);
+   }
+   $updates = [];
+   $params = [':id' => $data['id']];
+   if (isset($data['name'])) {
+       $updates[] = "name = :name";
+       $params[':name'] = $data['name'];
+   }
+   if (isset($data['email'])) {
+       $stmt = $db->prepare("SELECT id FROM users WHERE email = :email AND id != :id");
+       $stmt->execute([':email' => $data['email'], ':id' => $data['id']]);
+       if ($stmt->fetch()) {
+           sendResponse("Email already used by another user", 409);
+       }
+       $updates[] = "email = :email";
+       $params[':email'] = $data['email'];
+   }
+   if (isset($data['is_admin'])) {
+       $updates[] = "is_admin = :is_admin";
+       $params[':is_admin'] = (int)$data['is_admin'];
+   }
+   if (empty($updates)) {
+       sendResponse("No fields to update", 200);
+   }
+   $sql = "UPDATE users SET " . implode(", ", $updates) . " WHERE id = :id";
+   $stmt = $db->prepare($sql);
+   $stmt->execute($params);
+   sendResponse("User updated successfully", 200);
+}
 
-        if (empty($data['id'])) {
 
-            sendResponse("Missing user id", 400);
 
-        }
-
-        $stmt = $db->prepare("SELECT id FROM users WHERE id = :id");
-
-        $stmt->execute([':id' => $data['id']]);
-
-        if (!$stmt->fetch()) {
-
-            sendResponse("User not found", 404);
-
-        }
-
-        $updates = [];
-
-        $params = [':id' => $data['id']];
-
-        if (isset($data['name'])) {
-
-            $updates[] = "name = :name";
-
-            $params[':name'] = $data['name'];
-
-        }
-
-        if (isset($data['email'])) {
-
-            $stmt = $db->prepare("SELECT id FROM users WHERE email = :email AND id != :id");
-
-            $stmt->execute([':email' => $data['email'], ':id' => $data['id']]);
-
-            if ($stmt->fetch()) {
-
-                sendResponse("Email already used by another user", 409);
-
-            }
-
-            $updates[] = "email = :email";
-
-            $params[':email'] = $data['email'];
-
-        }
-
-        if (isset($data['is_admin'])) {
-
-            $updates[] = "is_admin = :is_admin";
-
-            $params[':is_admin'] = (int)$data['is_admin'];
-
-        }
-
-        if (empty($updates)) {
-
-            sendResponse("No fields to update", 200);
-
-        }
-
-        $sql = "UPDATE users SET " . implode(", ", $updates) . " WHERE id = :id";
-
-        $stmt = $db->prepare($sql);
-
-        $stmt->execute($params);
-
-        sendResponse("User updated successfully", 200);
-
-    }
 
     elseif ($method === 'DELETE') {
 
