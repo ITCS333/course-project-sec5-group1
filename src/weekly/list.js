@@ -1,65 +1,83 @@
 /*
-  Requirement: Populate the "Weekly Course Breakdown" list page.
+  list.js — populates the "Weekly Course Breakdown" list page.
 
-  Instructions:
-  1. This file is already linked to `list.html` via:
-         <script src="list.js" defer></script>
+  HTML entry point: src/weekly/list.html
+    <script src="list.js" defer></script>
+    <section id="week-list-section"></section>   <-- populated below
 
-  2. In `list.html`, the <section id="week-list-section"> is the container
-     that this script populates.
+  API endpoint: ./api/index.php
+    GET  → { success: true, data: [ ...week objects ] }
 
-  3. Implement the TODOs below.
+  Week object shape returned by the API:
+    {
+      id:          number,
+      title:       string,
+      start_date:  string,   // "YYYY-MM-DD"
+      description: string,
+      links:       string[]  // decoded array of URL strings
+    }
 */
 
 // --- Element Selections ---
-// TODO: Select the section for the week list using its id 'week-list-section'.
+const listSection = document.getElementById("week-list-section");
 
 // --- Functions ---
 
 /**
- * TODO: Implement createWeekArticle.
+ * Build one <article> element for a single week.
  *
- * Parameters:
- *   week — one object from the API response with the shape:
- *     {
- *       id:          number,   // integer primary key from the weeks table
- *       title:       string,
- *       start_date:  string,   // "YYYY-MM-DD" — matches the SQL column name
- *       description: string,
- *       links:       string[]  // already decoded array of URL strings
- *     }
- *
- * Returns:
- *   An <article> element matching the structure shown in list.html:
- *     <article>
- *       <h2>{title}</h2>
- *       <p>Starts on: {start_date}</p>
- *       <p>{description}</p>
- *       <a href="details.html?id={id}">View Details & Discussion</a>
- *     </article>
- *
- * Important: the href MUST be "details.html?id=<id>" (integer id from
- * the weeks table) so that details.js can read the id from the URL.
+ * Structure:
+ *   <article>
+ *     <h2>{title}</h2>
+ *     <p>Starts on: {start_date}</p>
+ *     <p>{description}</p>
+ *     <a href="details.html?id={id}">View Details & Discussion</a>
+ *   </article>
  */
 function createWeekArticle(week) {
-  // ... your implementation here ...
+  const article = document.createElement("article");
+
+  const heading = document.createElement("h2");
+  heading.textContent = week.title;
+
+  const startP = document.createElement("p");
+  startP.textContent = "Starts on: " + week.start_date;
+
+  const descP = document.createElement("p");
+  descP.textContent = week.description;
+
+  const link = document.createElement("a");
+  link.href = "details.html?id=" + week.id;
+  link.textContent = "View Details & Discussion";
+
+  article.appendChild(heading);
+  article.appendChild(startP);
+  article.appendChild(descP);
+  article.appendChild(link);
+
+  return article;
 }
 
 /**
- * TODO: Implement loadWeeks (async).
- *
- * It should:
- * 1. Use fetch() to GET data from './api/index.php'.
- *    The API returns JSON in the shape:
- *      { success: true, data: [ ...week objects ] }
- * 2. Parse the JSON response.
- * 3. Clear any existing content from the list section.
- * 4. Loop through the data array. For each week object:
- *    - Call createWeekArticle(week).
- *    - Append the returned <article> to the list section.
+ * Fetch all weeks from the API and render them into #week-list-section.
  */
 async function loadWeeks() {
-  // ... your implementation here ...
+  try {
+    const response = await fetch("./api/index.php");
+    const result   = await response.json();
+
+    // Clear any existing content.
+    listSection.innerHTML = "";
+
+    if (result && result.success && Array.isArray(result.data)) {
+      result.data.forEach(week => {
+        const article = createWeekArticle(week);
+        listSection.appendChild(article);
+      });
+    }
+  } catch (err) {
+    console.error("Failed to load weeks:", err);
+  }
 }
 
 // --- Initial Page Load ---
