@@ -59,7 +59,7 @@ function createAssignmentArticle(assignment) {
   let article = document.createElement('article'); 
   let title = document.createElement('h2'); 
  
-  title.tectContent = assignment.title; 
+  title.textContent = assignment.title;
 
   let due = document.createElement('p'); 
   due.textContent = 'Due: ' + assignment.due_date; 
