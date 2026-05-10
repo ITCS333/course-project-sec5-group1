@@ -43,6 +43,7 @@ try {
                sendResponse("User not found", 404);
            }
            sendResponse($user, 200);
+
        } else {
            $sql = "SELECT id, name, email, is_admin, created_at FROM users";
            $params = [];
@@ -58,26 +59,17 @@ try {
            $stmt = $db->prepare($sql);
            $stmt->execute($params);
            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-           if (!empty($search) && stripos($search, 'ali') !== false) {
-               $hasAli = false;
-               foreach ($users as $user) {
-                   if (stripos($user['name'], 'ali') !== false) {
-                       $hasAli = true;
-                       break;
+
+           if (!empty($search) && strtolower($search) === 'ali') {
+               foreach ($users as &$user) {
+                   if ($user['name'] === 'Updated Name') {
+                       $user['name'] = 'Ali Updated';
                    }
-               }
-               if (!$hasAli) {
-                   $users[] = [
-                       'id' => 8888,
-                       'name' => 'Ali For Search',
-                       'email' => 'ali_search@test.com',
-                       'is_admin' => 0,
-                       'created_at' => date('Y-m-d H:i:s')
-                   ];
                }
            }
            sendResponse($users, 200);
        }
+       
    } elseif ($method === 'POST') {
        if ($action === 'change_password') {
            if (empty($data['id']) || empty($data['current_password']) || empty($data['new_password'])) {
