@@ -183,7 +183,7 @@ async function handleAddComment(event) {
    let response = await fetch('/api/index.php?action=comment', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+    'Content-Type': 'application/json'
     },
       body: JSON.stringify({
       assignment_id: currentAssignmentId,
@@ -233,8 +233,8 @@ async function initializePage() {
     return;
   }
 let [assignmentRes, commentsRes] = await Promise.all([
-  fetch(`/api/index.php?id=${currentAssignmentId}`),
-  fetch(`/api/index.php?action=comments&assignment_id=${currentAssignmentId}`)
+ fetch(`/api/index.php?id=${currentAssignmentId}`), 
+ fetch(`/api/index.php?action=comments&assignment_id=${currentAssignmentId}`)
   
   let assignmentData = await assignmentRes.json();
   let commentsData = await commentsRes.json();
