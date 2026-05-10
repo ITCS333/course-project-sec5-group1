@@ -48,6 +48,13 @@ let currentComments     = [];
 //   assignmentFilesList, commentList, commentForm, newCommentInput.
 
 // --- Functions ---
+let assignmentTitle = document.getElementById('assignment-title');
+let assignmentDueDate = document.getElementById('assignment-due-date');
+let assignmentDescription = document.getElementById('assignment-description');
+let assignmentFilesList = document.getElementById('assignment-files-list');
+let commentList = document.getElementById('comment-list');
+let commentForm = document.getElementById('comment-form');
+let newCommentInput = document.getElementById('new-comment');
 
 /**
  * TODO: Implement getAssignmentIdFromURL.
@@ -58,9 +65,14 @@ let currentComments     = [];
  * 3. Return the value of the 'id' parameter (a string that represents
  *    the integer primary key of the assignment).
  */
+
 function getAssignmentIdFromURL() {
   // ... your implementation here ...
+
+  let params = new URLSearchParams(window.location.search);
+  return params.get('id');
 }
+
 
 /**
  * TODO: Implement renderAssignmentDetails.
@@ -80,6 +92,21 @@ function getAssignmentIdFromURL() {
  */
 function renderAssignmentDetails(assignment) {
   // ... your implementation here ...
+  assignmentTitle.textContent = assignment.title;
+  assignmentDueDate.textContent = 'Due: ' + assignment.due_date;
+  assignmentDescription.textContent = assignment.description;
+  assignmentFilesList.innerHTML = '';
+  assignment.files.forEach(function (url) {
+    let li = document.createElement('li');
+
+    let a = document.createElement('a');
+    a.href = url;
+    a.textContent = url;
+
+    li.appendChild(a);
+    assignmentFilesList.appendChild(li);
+
+  });
 }
 
 /**
@@ -97,6 +124,16 @@ function renderAssignmentDetails(assignment) {
  */
 function createCommentArticle(comment) {
   // ... your implementation here ...
+  let article = document.createElement('article');
+  let p = document.createElement('p');
+  p.textContent = comment.text;
+   let footer = document.createElement('footer');
+  footer.textContent = 'Posted by: ' + comment.author;
+  article.appendChild(p);
+  article.appendChild(footer);
+
+  return article;
+
 }
 
 /**
@@ -110,6 +147,11 @@ function createCommentArticle(comment) {
  */
 function renderComments() {
   // ... your implementation here ...
+   commentList.innerHTML = '';
+  currentComments.forEach(function (comment) {
+     let article = createCommentArticle(comment);
+     commentList.appendChild(article);
+  });
 }
 
 /**
@@ -135,6 +177,27 @@ function renderComments() {
  */
 async function handleAddComment(event) {
   // ... your implementation here ...
+  event.preventDefault();
+  let commentText = newCommentInput.value;
+   if (commentText.trim() === '') return;
+   let response = await fetch('/api/index.php?action=comment', {
+    method: 'POST',
+    headers: {
+    'Content-Type': 'application/json'
+    },
+      body: JSON.stringify({
+      assignment_id: currentAssignmentId,
+      author: 'Student',
+      text: commentText
+    })
+  });
+   let result = await response.json();
+   if (result.success) {
+    currentComments.push(result.data);
+  renderComments();
+   newCommentInput.value = '';
+  }
+
 }
 
 /**
@@ -164,6 +227,28 @@ async function handleAddComment(event) {
  */
 async function initializePage() {
   // ... your implementation here ...
+   currentAssignmentId = getAssignmentIdFromURL();
+   if (!currentAssignmentId) {
+    assignmentTitle.textContent = 'Assignment not found.';
+    return;
+  }
+let [assignmentRes, commentsRes] = await Promise.all([
+ fetch(`/api/index.php?id=${currentAssignmentId}`), 
+ fetch(`/api/index.php?action=comments&assignment_id=${currentAssignmentId}`)
+  
+  let assignmentData = await assignmentRes.json();
+  let commentsData = await commentsRes.json();
+  currentComments = commentsData.success ? commentsData.data : [];
+   if (assignmentData.success && assignmentData.data) {
+
+  let assignment = assignmentData.data;
+
+   renderAssignmentDetails(assignment);
+   renderComments();
+   commentForm.addEventListener('submit', handleAddComment);
+} else {
+ assignmentTitle.textContent = 'Assignment not found.';
+  }
 }
 
 // --- Initial Page Load ---
