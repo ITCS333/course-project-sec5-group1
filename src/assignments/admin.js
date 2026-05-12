@@ -41,6 +41,7 @@ let tbody = document.getElementById('assignments-tbody');
 
 /**
  * TODO: Implement createAssignmentRow.
+ 
  *
  * Parameters:
  *   assignment — one assignment object with shape:
