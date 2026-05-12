@@ -133,59 +133,60 @@ function renderTable() {
  */
 async function handleAddAssignment(event) {
   // ... your implementation here ...
-   event.preventDefault();
+ async function handleAddAssignment(event) {
+    event.preventDefault();
+    
+    const form = event.target;
 
-  let title = document.getElementById('assignment-title').value;
-  let due_date = document.getElementById('assignment-due-date').value;
-  let description = document.getElementById('assignment-description').value;
+    let title = document.getElementById('assignment-title').value;
+    let due_date = document.getElementById('assignment-due-date').value;
+    let description = document.getElementById('assignment-description').value;
 
-  let filesText = document.getElementById('assignment-files').value;
-  let files = filesText.split('\n').filter(function (f) {
-    return f.trim() !== '';
-  });
-
-   let button = document.getElementById('add-assignment');
-  
- if (button.dataset.editId) {
-    handleUpdateAssignment(button.dataset.editId, {
-      title,
-      due_date,
-      description,
-      files
-    });
-    return;
-  }
-
-  let response = await fetch('./api/index.php', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      title,
-      due_date,
-      description,
-      files
-    })
-  });
-
-  
-  let result = await response.json();
-
-  if (result.success) {
-
-    assignments.push({
-      id: result.id,
-      title,
-      due_date,
-      description,
-      files
+    let filesText = document.getElementById('assignment-files').value;
+    let files = filesText.split('\n').filter(function (f) {
+        return f.trim() !== '';
     });
 
-    renderTable();
-    form.reset();
-  }
+    let button = document.getElementById('add-assignment');
 
+    if (button.dataset.editId) {
+        await handleUpdateAssignment(button.dataset.editId, {
+            title,
+            due_date,
+            description,
+            files
+        });
+        return;
+    }
+
+    let response = await fetch('./api/index.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            title,
+            due_date,
+            description,
+            files
+        })
+    });
+
+    let result = await response.json();
+
+    if (result.success === true) {
+        assignments.push({
+            id: result.id,
+            title,
+            due_date,
+            description,
+            files
+        });
+
+        renderTable();
+        form.reset(); 
+    }
+}
 
 }
 
