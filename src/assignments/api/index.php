@@ -866,7 +866,7 @@ if ($action === 'delete_comment') {
     }
     }
 
-} catch (PDOException $e) {
+ catch (PDOException $e) {
     // TODO: Log the error with error_log().
     // Return a generic HTTP 500 — do NOT expose $e->getMessage() to clients.
       error_log($e->getMessage());
