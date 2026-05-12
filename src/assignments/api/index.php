@@ -149,13 +149,16 @@ function getAllAssignments(PDO $db): void
     // TODO: Validate $_GET['sort'] against the whitelist
     // [title, due_date, created_at].
     // Default to 'due_date' if missing or invalid.
-  $allowedSort = ['title', 'due_date', 'created_at'];
+ $allowedSort = ['title', 'due_date', 'created_at'];
+$sort = $_GET['sort'] ?? 'due_date';
+if (!in_array($sort, $allowedSort)) {
+    $sort = 'due_date';
+}
 
-    $sort = $_GET['sort'] ?? 'due_date';
-
-    if (!in_array($sort, $allowedSort)) {
-        $sort = 'due_date';
-    }
+$order = strtolower($_GET['order'] ?? 'asc');
+if (!in_array($order, ['asc', 'desc'])) {
+    $order = 'asc';
+}
 
     // TODO: Validate $_GET['order'] against [asc, desc].
     // Default to 'asc' if missing or invalid.
@@ -199,7 +202,7 @@ $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     // $row['files'] = json_decode($row['files'], true) ?? [];
 
 foreach ($assignments as &$row) {
-    $row['files'] = json_decode($row['files'], true) ?? [];
+    $row['files'] = json_decode($row['files'] ?? '[]', true) ?? [];
 }
 
     // TODO: Call sendResponse(['success' => true, 'data' => $assignments]);
@@ -389,15 +392,10 @@ function updateAssignment(PDO $db, array $data): void
 {
     // TODO: Validate that $data['id'] is present.
     // If not, sendResponse HTTP 400.
-     if (empty($data['id']) || !is_numeric($data['id'])) {
-        http_response_code(400);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Assignment id is required'
-        ]);
-
-        return;
+    $id = $data['id'] ?? null;
+if (!$id || !is_numeric($id)) {
+    sendResponse(['success' => false, 'message' => 'Assignment id is required'], 400);
+}
     }
 
     // TODO: Check that an assignment with this id exists.
@@ -477,12 +475,10 @@ function updateAssignment(PDO $db, array $data): void
     // TODO: Build: UPDATE assignments SET {clauses} WHERE id = ?
     // Prepare, bind all SET values, then bind id, and execute.
     
-    $sql = "UPDATE assignments SET " . implode(', ', $setClauses) . " WHERE id = ?";
-
-    $params[] = $id;
-
-    $stmt = $db->prepare($sql);
-    $success = $stmt->execute($params);
+  $sql = "UPDATE assignments SET " . implode(', ', $setClauses) . " WHERE id = ?";
+$params[] = $id;
+$stmt = $db->prepare($sql);
+$success = $stmt->execute($params);
 
     // TODO: sendResponse HTTP 200 on success, HTTP 500 on failure.
       if ($success) {
@@ -708,34 +704,11 @@ function createComment(PDO $db, array $data): void
     // Otherwise sendResponse HTTP 500.
      if ($stmt->rowCount() > 0) {
 
-        $newId = $db->lastInsertId();
-
-        $commentStmt = $db->prepare("
-            SELECT id, assignment_id, author, text, created_at
-            FROM comments_assignment
-            WHERE id = ?
-        ");
-
-        $commentStmt->execute([$newId]);
-
-        $comment = $commentStmt->fetch(PDO::FETCH_ASSOC);
-
-        http_response_code(201);
-
-        sendResponse([
-            'success' => true,
-            'message' => 'Comment created successfully',
-            'id' => (int)$newId,
-            'data' => $comment
-        ]);
-    } else {
-        http_response_code(500);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Failed to create comment'
-        ]);
-    }
+    $newId = $db->lastInsertId();
+    $commentStmt = $db->prepare("SELECT * FROM comments_assignment WHERE id = ?");
+    $commentStmt->execute([$newId]);
+    $comment = $commentStmt->fetch(PDO::FETCH_ASSOC);
+    sendResponse(['success' => true, 'id' => (int)$newId, 'data' => $comment], 201);
 }
 
 
