@@ -180,7 +180,7 @@ async function handleAddComment(event) {
   event.preventDefault();
   let commentText = newCommentInput.value;
    if (commentText.trim() === '') return;
-   let response = await fetch('/api/index.php?action=comment', {
+   let response = await fetch('./api/index.php?action=comment', {
     method: 'POST',
     headers: {
     'Content-Type': 'application/json'
@@ -233,11 +233,12 @@ async function initializePage() {
     return;
   }
 let [assignmentRes, commentsRes] = await Promise.all([
- fetch(`/api/index.php?id=${currentAssignmentId}`), 
- fetch(`/api/index.php?action=comments&assignment_id=${currentAssignmentId}`)
-  
-  let assignmentData = await assignmentRes.json();
-  let commentsData = await commentsRes.json();
+  fetch(`./api/index.php?id=${currentAssignmentId}`),
+  fetch(`./api/index.php?action=comments&assignment_id=${currentAssignmentId}`)
+]);
+
+let assignmentData = await assignmentRes.json();
+let commentsData = await commentsRes.json();
   currentComments = commentsData.success ? commentsData.data : [];
    if (assignmentData.success && assignmentData.data) {
 
