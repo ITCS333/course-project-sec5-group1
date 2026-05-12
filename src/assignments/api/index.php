@@ -175,7 +175,7 @@ if (!in_array($order, ['asc', 'desc'])) {
         $assignment['files'] = json_decode($assignment['files'], true) ?? [];
     }
 
-    echo json_encode([
+    sendResponse([
         'success' => true,
         'data' => $assignments
     ]);
@@ -330,16 +330,19 @@ function createAssignment(PDO $db, array $data): void
     // Otherwise sendResponse HTTP 500.
     
     if ($stmt->rowCount() > 0) {
-     sendResponse([
-    'success' => true,
-    'message' => 'Assignment created successfully',
-    'id' => (int)$db->lastInsertId()
-], 201);
-    } else {
-      sendResponse([
-    'success' => false,
-    'message' => '...'
-], 500); 
+   
+    sendResponse([
+        'success' => true,
+        'message' => 'Assignment created successfully',
+        'id' => (int)$db->lastInsertId()
+    ], 201);
+
+} else {
+
+    sendResponse([
+        'success' => false,
+        'message' => 'Failed to create assignment'
+    ], 500);
        
     }
 }
@@ -428,14 +431,13 @@ if (!$id || !is_numeric($id)) {
 
 
     // TODO: If no updatable fields are present, sendResponse HTTP 400.
- if (empty($setClauses)) {
-       sendResponse([
-    'success' => false,
-    'message' => 'Invalid due_date format'
-], 400);
-
-        return;
-    }
+if (empty($setClauses)) {
+    sendResponse([
+        'success' => false,
+        'message' => 'No fields to update'
+    ], 400);
+    return;
+}
     // TODO: updated_at is refreshed automatically by MySQL
     //       (ON UPDATE CURRENT_TIMESTAMP) — no need to set it manually.
 
@@ -449,7 +451,7 @@ $success = $stmt->execute($params);
 
     // TODO: sendResponse HTTP 200 on success, HTTP 500 on failure.
       if ($success) {
-        http_response_code(200);
+       
 
         sendResponse([
             'success' => true,
@@ -511,7 +513,7 @@ if (!$id || !is_numeric($id)) {
     // TODO: If rowCount() > 0, sendResponse HTTP 200.
     // Otherwise sendResponse HTTP 500.
     if ($stmt->rowCount() > 0) {
-        http_response_code(200);
+   
 
         sendResponse([
             'success' => true,
@@ -598,25 +600,23 @@ function createComment(PDO $db, array $data): void
         trim($data['author'] ?? '') === '' ||
         trim($data['text'] ?? '') === ''
     ) {
-        http_response_code(400);
+    
 
-        sendResponse([
-            'success' => false,
-            'message' => 'assignment_id, author, and text are required'
-        ]);
-
+       sendResponse([
+    'success' => false,
+    'message' => 'assignment_id, author, and text are required'
+], 400);
         return;
     }
 
     // TODO: Validate that assignment_id is numeric.
 
     if (!is_numeric($data['assignment_id'])) {
-        http_response_code(400);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'assignment_id must be numeric'
-        ]);
+       ;
+sendResponse([
+    'success' => false,
+    'message' => 'assignment_id must be numeric'
+], 400);
 
         return;
     }
@@ -632,12 +632,12 @@ function createComment(PDO $db, array $data): void
     $checkStmt->execute([$assignmentId]);
 
     if (!$checkStmt->fetch()) {
-        http_response_code(404);
+       
 
-        sendResponse([
-            'success' => false,
-            'message' => 'Assignment not found'
-        ]);
+     sendResponse([
+    'success' => false,
+    'message' => 'Assignment not found'
+], 404);
 
         return;
     }
@@ -679,7 +679,7 @@ function createComment(PDO $db, array $data): void
 
 } else {
 
-    http_response_code(500);
+  
 
     sendResponse([
         'success' => false,
@@ -701,15 +701,15 @@ function deleteComment(PDO $db, $commentId): void
     // TODO: Validate that $commentId is provided and numeric.
     // If not, sendResponse HTTP 400.
 
-    if (!$commentId || !is_numeric($commentId)) {
-   sendResponse([
-    'success' => false,
-    'message' => 'Comment not found'
-], 404);
+if (!$commentId || !is_numeric($commentId)) {
 
-        return;
-    }
+    sendResponse([
+        'success' => false,
+        'message' => 'Invalid comment id'
+    ], 400);
 
+    return;
+}
     // TODO: Check that the comment exists in comments_assignment.
     // If not, sendResponse HTTP 404.
     
@@ -719,16 +719,17 @@ function deleteComment(PDO $db, $commentId): void
         WHERE id = ?
     ");
 
-    $checkStmt->execute([$commentId]);
+$checkStmt->execute([$commentId]);
 
-  sendResponse([
-    'success' => false,
-    'message' => 'Comment not found'
-], 404);
+if (!$checkStmt->fetch()) {
 
-        return;
-    }
+    sendResponse([
+        'success' => false,
+        'message' => 'Comment not found'
+    ], 404);
 
+    return;
+}
     // TODO: DELETE FROM comments_assignment WHERE id = ?
 
     $stmt = $db->prepare("
@@ -742,14 +743,14 @@ function deleteComment(PDO $db, $commentId): void
     // Otherwise sendResponse HTTP 500.
     
     if ($stmt->rowCount() > 0) {
-        http_response_code(200);
+       
 
         sendResponse([
             'success' => true,
             'message' => 'Comment deleted successfully'
         ]);
     } else {
-        http_response_code(500);
+     
 
         sendResponse([
             'success' => false,
@@ -780,10 +781,10 @@ try {
             getAssignmentById($db, $id);
 
         // no parameters → all assignments (supports ?search, ?sort, ?order)
-        // TODO: else call getAllAssignments($db)
+        // TODO: else call http_response_code($db)
       } else {
 
-            getAllAssignments($db);
+         getAllAssignments($db);
         }
 
 
@@ -838,17 +839,17 @@ if ($action === 'delete_comment') {
     // Return a generic HTTP 500 — do NOT expose $e->getMessage() to clients.
       error_log($e->getMessage());
 
-    http_response_code(500);
+ 
 
-    sendResponse([
-        'success' => false,
-        'message' => 'Database server error'
-    ]);
+   sendResponse([
+    'success' => false,
+    'message' => 'Database server error'
+], 500);
 
 } catch (Exception $e) {
     // TODO: Log the error with error_log().
     // Return HTTP 500 using sendResponse().
-    
+
     error_log($e->getMessage());
 
    sendResponse([
