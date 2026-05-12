@@ -162,9 +162,7 @@ if (!in_array($order, ['asc', 'desc'])) {
 
     // TODO: Validate $_GET['order'] against [asc, desc].
     // Default to 'asc' if missing or invalid.
-  if (!in_array($order, ['asc', 'desc'])) {
-        $order = 'asc';
-    }
+
 
     $sql .= " ORDER BY $sort $order";
 
@@ -181,38 +179,23 @@ if (!in_array($order, ['asc', 'desc'])) {
         'success' => true,
         'data' => $assignments
     ]);
-}
+
 
   
     // TODO: Append ORDER BY {sort} {order} to the query.
-$sql .= " ORDER BY $sort $order";
+
     // TODO: Prepare, bind (if searching), and execute the statement.
-$stmt = $db->prepare($sql);
 
-if (!empty($_GET['search'])) {
-    $stmt->bindValue(':search', '%' . $_GET['search'] . '%');
-}
-
-$stmt->execute();
     // TODO: Fetch all rows as an associative array.
-$assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
     // TODO: For each row, decode the files column:
     // $row['files'] = json_decode($row['files'], true) ?? [];
 
-foreach ($assignments as &$row) {
-    $row['files'] = json_decode($row['files'] ?? '[]', true) ?? [];
-}
 
     // TODO: Call sendResponse(['success' => true, 'data' => $assignments]);
-sendResponse([
-    'success' => true,
-    'data' => $assignments
-]);
 
-
-
+}
 /**
  * Get a single assignment by its integer primary key.
  * Method: GET with ?id={id}.
@@ -396,7 +379,7 @@ function updateAssignment(PDO $db, array $data): void
 if (!$id || !is_numeric($id)) {
     sendResponse(['success' => false, 'message' => 'Assignment id is required'], 400);
 }
-    }
+    
 
     // TODO: Check that an assignment with this id exists.
     // If not, sendResponse HTTP 404.
@@ -496,8 +479,8 @@ $success = $stmt->execute($params);
             'message' => 'Failed to update assignment'
         ]);
     }
-}
 
+}
 
 
 /**
@@ -705,10 +688,30 @@ function createComment(PDO $db, array $data): void
      if ($stmt->rowCount() > 0) {
 
     $newId = $db->lastInsertId();
-    $commentStmt = $db->prepare("SELECT * FROM comments_assignment WHERE id = ?");
+
+    $commentStmt = $db->prepare("
+        SELECT * FROM comments_assignment WHERE id = ?
+    ");
+
     $commentStmt->execute([$newId]);
+
     $comment = $commentStmt->fetch(PDO::FETCH_ASSOC);
-    sendResponse(['success' => true, 'id' => (int)$newId, 'data' => $comment], 201);
+
+    sendResponse([
+        'success' => true,
+        'id' => (int)$newId,
+        'data' => $comment
+    ], 201);
+
+} else {
+
+    http_response_code(500);
+
+    sendResponse([
+        'success' => false,
+        'message' => 'Failed to create comment'
+    ]);
+}
 }
 
 
@@ -939,4 +942,4 @@ function sanitizeInput(string $data): string
     // TODO: return htmlspecialchars(strip_tags(trim($data)), ENT_QUOTES, 'UTF-8');
       return htmlspecialchars(strip_tags(trim($data)), ENT_QUOTES, 'UTF-8');
 }
-}
+
