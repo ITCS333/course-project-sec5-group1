@@ -96,7 +96,7 @@ function renderAssignmentDetails(assignment) {
   assignmentDueDate.textContent = 'Due: ' + assignment.due_date;
   assignmentDescription.textContent = assignment.description;
   assignmentFilesList.innerHTML = '';
-  assignment.files.forEach(function (url) {
+(assignment.files || []).forEach(function (url) {
     let li = document.createElement('li');
 
     let a = document.createElement('a');
