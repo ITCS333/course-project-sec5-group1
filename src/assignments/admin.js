@@ -140,9 +140,6 @@ async function handleAddAssignment(event) {
   // ... your implementation here ...
  event.preventDefault();
   
-  // استخدام event.target لضمان الوصول الصحيح للنموذج
-  const currentForm = event.target;
-
   let title = document.getElementById('assignment-title').value;
   let due_date = document.getElementById('assignment-due-date').value;
   let description = document.getElementById('assignment-description').value;
@@ -189,7 +186,7 @@ async function handleAddAssignment(event) {
       });
 
       renderTable();
-      currentForm.reset(); 
+    form.reset();
   }
 
 }
