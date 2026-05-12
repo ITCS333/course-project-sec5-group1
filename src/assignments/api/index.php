@@ -212,7 +212,7 @@ function getAssignmentById(PDO $db, $id): void
  if (!$id || !is_numeric($id)) {
        sendResponse([
     'success' => false,
-    'message' => '...'
+    'message' => 'Invalid assignment id'
 ], 400);
 
         return;
@@ -330,13 +330,11 @@ function createAssignment(PDO $db, array $data): void
     // Otherwise sendResponse HTTP 500.
     
     if ($stmt->rowCount() > 0) {
-        http_response_code(201);
-
-        sendResponse([
-            'success' => true,
-            'message' => 'Assignment created successfully',
-            'id' => (int)$db->lastInsertId()
-        ]);
+       sendResponse([
+    'success' => true,
+    'message' => 'Assignment created successfully',
+    'id' => (int)$db->lastInsertId()
+], 201);
     } else {
       sendResponse([
     'success' => false,
@@ -379,12 +377,10 @@ if (!$id || !is_numeric($id)) {
     $checkStmt->execute([$id]);
 
     if (!$checkStmt->fetch()) {
-        http_response_code(404);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Assignment not found'
-        ]);
+      sendResponse([
+    'success' => false,
+    'message' => 'Assignment not found'
+], 404);
 
         return;
     }
@@ -435,12 +431,10 @@ if (!$id || !is_numeric($id)) {
 
     // TODO: If no updatable fields are present, sendResponse HTTP 400.
  if (empty($setClauses)) {
-        http_response_code(400);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'No fields to update'
-        ]);
+       sendResponse([
+    'success' => false,
+    'message' => 'Invalid due_date format'
+], 400);
 
         return;
     }
@@ -464,12 +458,10 @@ $success = $stmt->execute($params);
             'message' => 'Assignment updated successfully'
         ]);
     } else {
-        http_response_code(500);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Failed to update assignment'
-        ]);
+      sendResponse([
+    'success' => false,
+    'message' => 'Failed to update assignment'
+], 500);
     }
 
 }
@@ -491,12 +483,10 @@ function deleteAssignment(PDO $db, $id): void
     // TODO: Validate that $id is provided and numeric.
     // If not, sendResponse HTTP 400.
 if (!$id || !is_numeric($id)) {
-        http_response_code(400);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Invalid assignment id'
-        ]);
+       sendResponse([
+    'success' => false,
+    'message' => 'Invalid assignment id'
+], 400);
 
         return;
     }
@@ -507,12 +497,10 @@ if (!$id || !is_numeric($id)) {
     $checkStmt->execute([$id]);
 
     if (!$checkStmt->fetch()) {
-        http_response_code(404);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Assignment not found'
-        ]);
+     sendResponse([
+    'success' => false,
+    'message' => 'Assignment not found'
+], 404);
 
         return;
     }
@@ -532,12 +520,10 @@ if (!$id || !is_numeric($id)) {
             'message' => 'Assignment deleted successfully'
         ]);
     } else {
-        http_response_code(500);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Failed to delete assignment'
-        ]);
+      sendResponse([
+    'success' => false,
+    'message' => 'Failed to delete assignment'
+], 500);
     }
 }
 
@@ -560,12 +546,10 @@ function getCommentsByAssignment(PDO $db, $assignmentId): void
     // TODO: Validate that $assignmentId is provided and numeric.
     // If not, sendResponse HTTP 400.
  if (!$assignmentId || !is_numeric($assignmentId)) {
-        http_response_code(400);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Invalid assignment id'
-        ]);
+       sendResponse([
+    'success' => false,
+    'message' => 'Invalid assignment id'
+], 400);
 
         return;
     }
@@ -849,12 +833,10 @@ if ($action === 'delete_comment') {
 
     } else {
         // TODO: sendResponse HTTP 405 Method Not Allowed.
-           http_response_code(405);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Method Not Allowed'
-        ]);
+         sendResponse([
+    'success' => false,
+    'message' => 'Method Not Allowed'
+], 405);
     }
     
 
@@ -876,12 +858,10 @@ if ($action === 'delete_comment') {
     
     error_log($e->getMessage());
 
-    http_response_code(500);
-
-    sendResponse([
-        'success' => false,
-        'message' => 'Internal server error'
-    ]);
+   sendResponse([
+    'success' => false,
+    'message' => 'Database server error'
+], 500);
 }
 
 
