@@ -330,7 +330,7 @@ function createAssignment(PDO $db, array $data): void
     // Otherwise sendResponse HTTP 500.
     
     if ($stmt->rowCount() > 0) {
-       sendResponse([
+     sendResponse([
     'success' => true,
     'message' => 'Assignment created successfully',
     'id' => (int)$db->lastInsertId()
@@ -409,12 +409,10 @@ if (!$id || !is_numeric($id)) {
         $date = DateTime::createFromFormat('Y-m-d', $dueDate);
 
         if (!$date || $date->format('Y-m-d') !== $dueDate) {
-            http_response_code(400);
-
-            sendResponse([
-                'success' => false,
-                'message' => 'Invalid due_date format'
-            ]);
+          sendResponse([
+    'success' => false,
+    'message' => 'Invalid due_date format'
+], 400);
 
             return;
         }
@@ -704,12 +702,10 @@ function deleteComment(PDO $db, $commentId): void
     // If not, sendResponse HTTP 400.
 
     if (!$commentId || !is_numeric($commentId)) {
-        http_response_code(400);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Invalid comment id'
-        ]);
+   sendResponse([
+    'success' => false,
+    'message' => 'Comment not found'
+], 404);
 
         return;
     }
@@ -725,13 +721,10 @@ function deleteComment(PDO $db, $commentId): void
 
     $checkStmt->execute([$commentId]);
 
-    if (!$checkStmt->fetch()) {
-        http_response_code(404);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Comment not found'
-        ]);
+  sendResponse([
+    'success' => false,
+    'message' => 'Comment not found'
+], 404);
 
         return;
     }
