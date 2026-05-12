@@ -210,12 +210,10 @@ function getAssignmentById(PDO $db, $id): void
     // TODO: Validate that $id is provided and numeric.
     // If not, call sendResponse with HTTP 400.
  if (!$id || !is_numeric($id)) {
-        http_response_code(400);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Invalid assignment id'
-        ]);
+       sendResponse([
+    'success' => false,
+    'message' => '...'
+], 400);
 
         return;
     }
@@ -245,12 +243,11 @@ function getAssignmentById(PDO $db, $id): void
             'data' => $assignment
         ]);
     } else {
-        http_response_code(404);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Assignment not found'
-        ]);
+     sendResponse([
+    'success' => false,
+    'message' => 'Assignment not found'
+], 404);
+        
     }
 }
     
@@ -282,12 +279,10 @@ function createAssignment(PDO $db, array $data): void
         empty($data['description']) ||
         empty($data['due_date'])
     ) {
-        http_response_code(400);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'title, description, and due_date are required'
-        ]);
+  sendResponse([
+    'success' => false,
+    'message' => 'title, description, and due_date are required'
+], 400);
 
         return;
     }
@@ -302,12 +297,10 @@ function createAssignment(PDO $db, array $data): void
  $date = DateTime::createFromFormat('Y-m-d', $due_date);
 
     if (!$date || $date->format('Y-m-d') !== $due_date) {
-        http_response_code(400);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Invalid due_date format'
-        ]);
+      sendResponse([
+    'success' => false,
+    'message' => 'Invalid due_date format'
+], 400);
 
         return;
     }
@@ -345,12 +338,11 @@ function createAssignment(PDO $db, array $data): void
             'id' => (int)$db->lastInsertId()
         ]);
     } else {
-        http_response_code(500);
-
-        sendResponse([
-            'success' => false,
-            'message' => 'Failed to create assignment'
-        ]);
+      sendResponse([
+    'success' => false,
+    'message' => '...'
+], 500); 
+       
     }
 }
 
@@ -864,9 +856,9 @@ if ($action === 'delete_comment') {
             'message' => 'Method Not Allowed'
         ]);
     }
-    }
+    
 
- catch (PDOException $e) {
+}catch (PDOException $e) {
     // TODO: Log the error with error_log().
     // Return a generic HTTP 500 — do NOT expose $e->getMessage() to clients.
       error_log($e->getMessage());
