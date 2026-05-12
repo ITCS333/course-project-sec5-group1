@@ -110,6 +110,7 @@ tbody.innerHTML = '';
     let row = createAssignmentRow(assignment);
     tbody.appendChild(row);
   });
+}
 
 /**
  * TODO: Implement handleAddAssignment (async).
@@ -180,7 +181,7 @@ async function handleAddAssignment(event) {
 
   if (result.success === true) {
       assignments.push({
-          id: result.id,
+          id: Number(result.id),
           title,
           due_date,
           description,
@@ -232,7 +233,7 @@ async function handleUpdateAssignment(id, fields) {
     assignments = assignments.map(function (a) {
       if (a.id == id) {
         return {
-          id,
+          id: Number(id),
           title: fields.title,
           due_date: fields.due_date,
           description: fields.description,
@@ -247,7 +248,7 @@ async function handleUpdateAssignment(id, fields) {
 
     let button = document.getElementById('add-assignment');
     button.textContent = 'Add Assignment';
-    delete button.dataset.editId;
+    button.removeAttribute('data-edit-id');
   }
 
 }
@@ -280,7 +281,7 @@ async function handleTableClick(event) {
    let target = event.target;
   
   if (target.classList.contains('delete-btn')) {
-    let id = target.dataset.id;
+    let id = Number(target.dataset.id);
     let response = await fetch(`./api/index.php?id=${id}`, {
       method: 'DELETE'
     });
@@ -295,7 +296,7 @@ async function handleTableClick(event) {
   }
 
   if (target.classList.contains('edit-btn')) {
-    let id = target.dataset.id;
+    let id = Number(target.dataset.id);
     let assignment = assignments.find(function (a) {
       return a.id == id;
     });
@@ -307,7 +308,7 @@ async function handleTableClick(event) {
 
     let button = document.getElementById('add-assignment');
     button.textContent = 'Update Assignment';
-    button.dataset.editId = id;
+    button.dataset.editId = String(id);
   }
 
 }
@@ -328,7 +329,7 @@ async function handleTableClick(event) {
 async function loadAndInitialize() {
   // ... your implementation here ...
  try {
-    let response = await fetch('./api/index.php');
+    let response = await fetch(`./api/index.php`);
     let result = await response.json();
 
     if (result.success) {
