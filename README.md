@@ -15,6 +15,8 @@ The website covers five functional areas, each assigned to one team member.
 
 > **Replit Deployment:** Update this link with your Replit deployment URL once the project is live.
 > https://course-project-replit-styled-fixedzip--yaseenalh333.replit.app
+> https://bedd87d1-cf25-4a4f-b54e-d2729464b51e-00-1hy9e8czq030i.sisko.replit.dev/
+This is another link from: Abdulla Ali Mohsen
 
 ---
 
